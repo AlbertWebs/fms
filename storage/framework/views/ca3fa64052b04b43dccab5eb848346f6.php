@@ -320,6 +320,30 @@
 <?php $component = $__componentOriginal0f13263f1f512da2bd4a4ff79680dcd5; ?>
 <?php unset($__componentOriginal0f13263f1f512da2bd4a4ff79680dcd5); ?>
 <?php endif; ?>
+                <?php if (isset($component)) { $__componentOriginal0f13263f1f512da2bd4a4ff79680dcd5 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal0f13263f1f512da2bd4a4ff79680dcd5 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.sidebar-nav-link','data' => ['href' => route('admin.test-mail.index'),'active' => request()->routeIs('admin.test-mail.*')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('sidebar-nav-link'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('admin.test-mail.index')),'active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('admin.test-mail.*'))]); ?>
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Test Mail</span>
+                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal0f13263f1f512da2bd4a4ff79680dcd5)): ?>
+<?php $attributes = $__attributesOriginal0f13263f1f512da2bd4a4ff79680dcd5; ?>
+<?php unset($__attributesOriginal0f13263f1f512da2bd4a4ff79680dcd5); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal0f13263f1f512da2bd4a4ff79680dcd5)): ?>
+<?php $component = $__componentOriginal0f13263f1f512da2bd4a4ff79680dcd5; ?>
+<?php unset($__componentOriginal0f13263f1f512da2bd4a4ff79680dcd5); ?>
+<?php endif; ?>
             </div>
         <?php endif; ?>
 

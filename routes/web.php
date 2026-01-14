@@ -53,6 +53,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'update'])->name('settings.update');
         
         Route::get('email-logs', [\App\Http\Controllers\EmailLogController::class, 'index'])->name('email-logs.index');
+        
+        Route::get('test-mail', [\App\Http\Controllers\Admin\TestMailController::class, 'index'])->name('test-mail.index');
+        Route::post('test-mail', [\App\Http\Controllers\Admin\TestMailController::class, 'send'])->name('test-mail.send');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
