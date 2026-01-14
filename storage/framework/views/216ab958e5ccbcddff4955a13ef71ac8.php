@@ -7,6 +7,17 @@
 
         <title><?php echo e(config('app.name', 'Laravel')); ?> - Secure Login</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="https://ngunziandassociates.co.ke/uploads/logo/favicon.png">
+        <link rel="apple-touch-icon" href="https://ngunziandassociates.co.ke/uploads/logo/favicon.png">
+
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="<?php echo e(asset('manifest.json')); ?>">
+        <meta name="theme-color" content="#4f46e5">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="<?php echo e(\App\Models\Setting::get('company_name', config('app.name', 'FileCR'))); ?>">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

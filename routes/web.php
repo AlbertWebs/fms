@@ -51,6 +51,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::get('settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'index'])->name('settings.index');
         Route::put('settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'update'])->name('settings.update');
+        
+        Route::get('email-logs', [\App\Http\Controllers\EmailLogController::class, 'index'])->name('email-logs.index');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

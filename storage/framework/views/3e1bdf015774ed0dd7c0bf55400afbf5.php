@@ -10,8 +10,8 @@
 <?php $component->withAttributes([]); ?>
      <?php $__env->slot('header', null, []); ?> 
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">System Settings</h1>
-            <p class="mt-1 text-sm text-gray-500">Manage system name, logo, and account information</p>
+            <h1 class="text-2xl font-semibold text-white">System Settings</h1>
+            <p class="mt-1 text-sm text-gray-300">Manage system name, logo, and account information</p>
         </div>
      <?php $__env->endSlot(); ?>
 
@@ -95,7 +95,7 @@
 <?php $component = $__componentOriginalf94ed9c5393ef72725d159fe01139746; ?>
 <?php unset($__componentOriginalf94ed9c5393ef72725d159fe01139746); ?>
 <?php endif; ?>
-                                <p class="mt-1 text-xs text-gray-500">The name displayed throughout the application</p>
+                                <p class="mt-1 text-xs text-gray-300">The name displayed throughout the application</p>
                             </div>
                         </div>
                     </div>

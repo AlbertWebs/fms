@@ -7,6 +7,17 @@
 
         <title><?php echo e(config('app.name', 'Laravel')); ?><?php if(isset($header)): ?> - <?php echo e(strip_tags($header)); ?><?php endif; ?></title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="https://ngunziandassociates.co.ke/uploads/logo/favicon.png">
+        <link rel="apple-touch-icon" href="https://ngunziandassociates.co.ke/uploads/logo/favicon.png">
+
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="<?php echo e(asset('manifest.json')); ?>">
+        <meta name="theme-color" content="#4f46e5">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="<?php echo e(\App\Models\Setting::get('company_name', config('app.name', 'FileCR'))); ?>">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -96,7 +107,7 @@
 
                 <!-- Page Content -->
                 <main class="flex-1 overflow-y-auto">
-                    <div class="py-6">
+                    <div class="py-6 page-fade-in" id="page-content">
                         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <!-- Toast Notifications -->
                             <div x-data="{ show: false, message: '', type: 'success' }" 
@@ -143,6 +154,34 @@
                         </div>
                     </div>
                 </main>
+            </div>
+
+            <!-- PWA Install Prompt -->
+            <div id="pwa-install-prompt" style="display: none;" class="fixed bottom-4 right-4 z-50 max-w-sm w-full lg:max-w-md">
+                <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-2xl p-5 border-2 border-white/20">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-white font-bold text-lg mb-1">Install App</h3>
+                            <p class="text-white/90 text-sm mb-4">Install <?php echo e(\App\Models\Setting::get('company_name', config('app.name', 'FileCR'))); ?> for a better experience</p>
+                            <div class="flex gap-2">
+                                <button id="pwa-install-button" class="inline-flex items-center px-4 py-2 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm">
+                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Install Now
+                                </button>
+                                <button id="pwa-install-dismiss" class="inline-flex items-center px-4 py-2 bg-white/20 text-white font-semibold rounded-lg hover:bg-white/30 transition-colors text-sm">
+                                    Not Now
+                                </button>
+                            </div>
+                        </div>
+                        <button id="pwa-install-close" class="ml-3 text-white/80 hover:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Mobile Sidebar Overlay -->

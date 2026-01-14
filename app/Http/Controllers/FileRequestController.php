@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Mail\FileRequestMail;
 use App\Mail\FileRequestAdminNotificationMail;
 use App\Services\AuditLogService;
+use App\Services\EmailLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -18,7 +19,8 @@ use Illuminate\Support\Str;
 class FileRequestController extends Controller
 {
     public function __construct(
-        protected AuditLogService $auditLogService
+        protected AuditLogService $auditLogService,
+        protected EmailLogService $emailLogService
     ) {}
 
     public function index(Request $request): View
@@ -106,7 +108,14 @@ class FileRequestController extends Controller
         $clientEmail = $fileRequest->client->contact_email ?? $fileRequest->client->email;
         if ($clientEmail) {
             try {
-                Mail::to($clientEmail)->send(new FileRequestMail($fileRequest));
+                $this->emailLogService->sendAndLog(
+                    $clientEmail,
+                    new FileRequestMail($fileRequest),
+                    $fileRequest->client->name,
+                    FileRequest::class,
+                    $fileRequest->id,
+                    ['type' => 'file_request_to_client']
+                );
             } catch (\Exception $e) {
                 \Log::error('Failed to send file request email to client: ' . $e->getMessage());
             }
@@ -119,7 +128,14 @@ class FileRequestController extends Controller
 
         foreach ($admins as $admin) {
             try {
-                Mail::to($admin->email)->send(new FileRequestAdminNotificationMail($fileRequest));
+                $this->emailLogService->sendAndLog(
+                    $admin->email,
+                    new FileRequestAdminNotificationMail($fileRequest),
+                    $admin->name,
+                    FileRequest::class,
+                    $fileRequest->id,
+                    ['type' => 'file_request_admin_notification']
+                );
             } catch (\Exception $e) {
                 \Log::error('Failed to send file request admin notification email: ' . $e->getMessage());
             }

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 class MfaService
 {
+    public function __construct(
+        protected EmailLogService $emailLogService
+    ) {}
     public function generateOtp(User $user): MfaVerification
     {
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -47,7 +50,14 @@ class MfaService
     protected function sendOtpEmail(User $user, string $otp): void
     {
         try {
-            Mail::to($user->email)->send(new MfaOtpMail($otp));
+            $this->emailLogService->sendAndLog(
+                $user->email,
+                new MfaOtpMail($otp),
+                $user->name,
+                User::class,
+                $user->id,
+                ['type' => 'mfa_otp']
+            );
         } catch (\Exception $e) {
             Log::error('Failed to send MFA email to ' . $user->email . ': ' . $e->getMessage());
             // Don't throw - allow the OTP to be generated even if email fails
