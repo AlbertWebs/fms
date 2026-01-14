@@ -17,7 +17,7 @@ class TestMail extends Mailable
      */
     public function __construct(
         public string $emailSubject,
-        public string $message
+        public string $emailMessage
     ) {}
 
     /**

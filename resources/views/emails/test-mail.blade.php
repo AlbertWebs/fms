@@ -15,7 +15,7 @@
         <p style="margin-top: 0;">Hello,</p>
 
         <div style="background: #f9fafb; border-left: 4px solid #4f46e5; padding: 15px; margin: 20px 0; border-radius: 4px;">
-            {!! nl2br(e($message)) !!}
+            {!! nl2br(e($emailMessage)) !!}
         </div>
 
         <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
