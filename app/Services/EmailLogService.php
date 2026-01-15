@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Mail;
 
 class EmailLogService
 {
+    public function __construct(
+        protected ?MailjetService $mailjetService = null
+    ) {}
+
     /**
      * Log an email before sending
      */
@@ -58,8 +62,18 @@ class EmailLogService
         );
 
         try {
-            // Send the email
-            Mail::to($recipientEmail)->send($mailable);
+            // Use Mailjet API if enabled, otherwise use SMTP
+            if (env('USE_MAILJET_API', false)) {
+                $this->mailjetService = $this->mailjetService ?? app(MailjetService::class);
+                $result = $this->mailjetService->sendMailable($recipientEmail, $mailable);
+                
+                if (!$result['success']) {
+                    throw new \Exception($result['error'] ?? 'Failed to send email via Mailjet API');
+                }
+            } else {
+                // Fall back to SMTP
+                Mail::to($recipientEmail)->send($mailable);
+            }
             
             // Mark as sent
             $emailLog->markAsSent();
