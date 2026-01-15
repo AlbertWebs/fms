@@ -57,6 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::get('test-mail', [\App\Http\Controllers\Admin\TestMailController::class, 'index'])->name('test-mail.index');
         Route::post('test-mail', [\App\Http\Controllers\Admin\TestMailController::class, 'send'])->name('test-mail.send');
+        
+        Route::get('purge', [\App\Http\Controllers\Admin\PurgeController::class, 'index'])->name('purge.index');
+        Route::post('purge', [\App\Http\Controllers\Admin\PurgeController::class, 'purge'])->name('purge.execute');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
