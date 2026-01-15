@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
     Route::get('files/{file}/preview', [FileController::class, 'preview'])->name('files.preview');
     Route::get('files/{file}/preview-page', [FileController::class, 'previewPage'])->name('files.preview-page');
+    Route::get('files/{file}/serve', [FileController::class, 'serve'])->name('files.serve');
     Route::put('files/{file}/status', [FileController::class, 'updateStatus'])->name('files.update-status');
     Route::post('files/{file}/toggle-lock', [FileController::class, 'toggleLock'])->name('files.toggle-lock');
     Route::post('files/{file}/upload-version', [FileController::class, 'uploadVersion'])->name('files.upload-version');

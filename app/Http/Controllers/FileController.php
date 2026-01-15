@@ -7,6 +7,7 @@ use App\Models\File;
 use App\Models\Client;
 use App\Models\Category;
 use App\Services\AuditLogService;
+use App\Services\StorageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -97,12 +98,16 @@ class FileController extends Controller
     {
         $uploadedFile = $request->file('file');
         $clientId = $request->client_id;
-        $financialYear = $request->financial_year;
+        $financialYear = $request->financial_year ?? null;
         $categoryId = $request->category_id;
 
         $originalName = $uploadedFile->getClientOriginalName();
         $storedName = Str::uuid() . '.' . $uploadedFile->getClientOriginalExtension();
-        $s3Path = "clients/{$clientId}/{$financialYear}/{$categoryId}/{$storedName}";
+        
+        // Build path with optional financial year
+        $s3Path = $financialYear 
+            ? "clients/{$clientId}/{$financialYear}/{$categoryId}/{$storedName}"
+            : "clients/{$clientId}/{$categoryId}/{$storedName}";
 
         // Generate file hash for duplicate detection
         $fileHash = hash_file('sha256', $uploadedFile->getRealPath());
@@ -114,12 +119,18 @@ class FileController extends Controller
             ->first();
 
         // Check if file with same name exists for versioning
-        $existingFile = File::where('client_id', $clientId)
+        $existingFileQuery = File::where('client_id', $clientId)
             ->where('category_id', $categoryId)
-            ->where('financial_year', $financialYear)
             ->where('original_name', $originalName)
-            ->whereNull('parent_file_id')
-            ->first();
+            ->whereNull('parent_file_id');
+            
+        if ($financialYear) {
+            $existingFileQuery->where('financial_year', $financialYear);
+        } else {
+            $existingFileQuery->whereNull('financial_year');
+        }
+        
+        $existingFile = $existingFileQuery->first();
 
         $version = 1;
         $parentFileId = null;
@@ -130,8 +141,8 @@ class FileController extends Controller
             $parentFileId = $existingFile->id;
         }
 
-        // Upload to S3
-        Storage::disk('s3')->putFileAs(
+        // Upload file
+        StorageService::disk()->putFileAs(
             dirname($s3Path),
             $uploadedFile,
             basename($s3Path),
@@ -143,6 +154,7 @@ class FileController extends Controller
             'category_id' => $categoryId,
             'uploaded_by' => $request->user()->id,
             'original_name' => $originalName,
+            'title' => $request->title,
             'stored_name' => $storedName,
             's3_path' => $s3Path,
             'mime_type' => $uploadedFile->getMimeType(),
@@ -177,10 +189,15 @@ class FileController extends Controller
         $this->authorize('files.preview');
 
         try {
-            $url = Storage::disk('s3')->temporaryUrl(
-                $file->s3_path,
-                now()->addMinutes(10)
-            );
+            $disk = StorageService::disk();
+            
+            if (env('USE_AWS', false)) {
+                // For S3, use temporary URL
+                $url = $disk->temporaryUrl($file->s3_path, now()->addMinutes(10));
+            } else {
+                // For local storage, use a route to serve the file
+                $url = route('files.serve', ['file' => $file->id]);
+            }
 
             $this->auditLogService->log('file_previewed', File::class, $file->id, "File '{$file->original_name}' previewed");
 
@@ -193,16 +210,42 @@ class FileController extends Controller
             return response()->json(['error' => 'Failed to generate preview link.'], 500);
         }
     }
+    
+    public function serve(File $file)
+    {
+        $this->authorize('files.preview');
+
+        try {
+            $disk = StorageService::disk();
+            
+            if (!$disk->exists($file->s3_path)) {
+                abort(404, 'File not found.');
+            }
+
+            $this->auditLogService->log('file_served', File::class, $file->id, "File '{$file->original_name}' served for preview");
+
+            return response($disk->get($file->s3_path))
+                ->header('Content-Type', $file->mime_type)
+                ->header('Content-Disposition', 'inline; filename="' . $file->original_name . '"');
+        } catch (\Exception $e) {
+            abort(500, 'Failed to serve file.');
+        }
+    }
 
     public function previewPage(File $file): View
     {
         $this->authorize('files.preview');
 
         try {
-            $url = Storage::disk('s3')->temporaryUrl(
-                $file->s3_path,
-                now()->addMinutes(60) // Longer expiry for page preview
-            );
+            $disk = StorageService::disk();
+            
+            if (env('USE_AWS', false)) {
+                // For S3, use temporary URL
+                $url = $disk->temporaryUrl($file->s3_path, now()->addMinutes(60));
+            } else {
+                // For local storage, use serve route
+                $url = route('files.serve', ['file' => $file->id]);
+            }
 
             $this->auditLogService->log('file_previewed', File::class, $file->id, "File '{$file->original_name}' previewed in new page");
 
@@ -287,9 +330,9 @@ class FileController extends Controller
             case 'delete':
                 foreach ($files as $file) {
                     try {
-                        Storage::disk('s3')->delete($file->s3_path);
+                        StorageService::disk()->delete($file->s3_path);
                     } catch (\Exception $e) {
-                        \Log::error("Failed to delete file from S3: " . $e->getMessage());
+                        \Log::error("Failed to delete file from storage: " . $e->getMessage());
                     }
                     $this->auditLogService->log('file_deleted', File::class, $file->id, "File '{$file->original_name}' deleted via bulk action");
                     $file->delete();
@@ -352,7 +395,7 @@ class FileController extends Controller
         foreach ($files as $file) {
             try {
                 $tempFile = tempnam(sys_get_temp_dir(), 'file_');
-                $content = Storage::disk('s3')->get($file->s3_path);
+                $content = StorageService::disk()->get($file->s3_path);
                 file_put_contents($tempFile, $content);
                 $zip->addFile($tempFile, $file->original_name);
                 $tempFiles[] = $tempFile;
@@ -383,14 +426,23 @@ class FileController extends Controller
         $this->authorize('files.download');
 
         try {
-            $url = Storage::disk('s3')->temporaryUrl(
-                $file->s3_path,
-                now()->addMinutes(5)
-            );
-
-            $this->auditLogService->log('file_downloaded', File::class, $file->id, "File '{$file->original_name}' downloaded");
-
-            return redirect($url);
+            $disk = StorageService::disk();
+            
+            if (env('USE_AWS', false)) {
+                // For S3, use temporary URL
+                $url = $disk->temporaryUrl($file->s3_path, now()->addMinutes(5));
+                $this->auditLogService->log('file_downloaded', File::class, $file->id, "File '{$file->original_name}' downloaded");
+                return redirect($url);
+            } else {
+                // For local storage, serve file directly
+                if (!$disk->exists($file->s3_path)) {
+                    return redirect()->back()->with('error', 'File not found.');
+                }
+                
+                $this->auditLogService->log('file_downloaded', File::class, $file->id, "File '{$file->original_name}' downloaded");
+                
+                return $disk->download($file->s3_path, $file->original_name);
+            }
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to generate download link.');
         }
@@ -414,13 +466,17 @@ class FileController extends Controller
 
         $uploadedFile = $request->file('file');
         $storedName = Str::uuid() . '.' . $uploadedFile->getClientOriginalExtension();
-        $s3Path = "clients/{$parentFile->client_id}/{$parentFile->financial_year}/{$parentFile->category_id}/{$storedName}";
+        
+        // Build path with optional financial year
+        $s3Path = $parentFile->financial_year 
+            ? "clients/{$parentFile->client_id}/{$parentFile->financial_year}/{$parentFile->category_id}/{$storedName}"
+            : "clients/{$parentFile->client_id}/{$parentFile->category_id}/{$storedName}";
 
         // Generate file hash for duplicate detection
         $fileHash = hash_file('sha256', $uploadedFile->getRealPath());
 
-        // Upload to S3
-        Storage::disk('s3')->putFileAs(
+        // Upload file
+        StorageService::disk()->putFileAs(
             dirname($s3Path),
             $uploadedFile,
             basename($s3Path),
@@ -468,11 +524,11 @@ class FileController extends Controller
         $fileName = $file->original_name;
         $fileId = $file->id;
 
-        // Delete from S3
+        // Delete from storage
         try {
-            Storage::disk('s3')->delete($file->s3_path);
+            StorageService::disk()->delete($file->s3_path);
         } catch (\Exception $e) {
-            \Log::error("Failed to delete file from S3: " . $e->getMessage());
+            \Log::error("Failed to delete file from storage: " . $e->getMessage());
         }
 
         $file->delete();

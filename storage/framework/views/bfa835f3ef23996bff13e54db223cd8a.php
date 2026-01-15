@@ -1,12 +1,21 @@
-<x-app-layout>
-    <x-slot name="header">
+<?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
+<?php $component = App\View\Components\AppLayout::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('app-layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\AppLayout::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+     <?php $__env->slot('header', null, []); ?> 
         <div class="flex justify-between items-center">
             <div>
                 <h1 class="text-3xl font-bold text-white">Files</h1>
                 <p class="mt-1 text-sm text-gray-300">Manage and organize client files</p>
             </div>
         </div>
-    </x-slot>
+     <?php $__env->endSlot(); ?>
 
     <div class="space-y-6">
         <!-- Global Search & Filter Toggle -->
@@ -21,7 +30,7 @@
                         </div>
                         <input type="text" 
                                id="search-input"
-                               value="{{ request('search', '') }}"
+                               value="<?php echo e(request('search', '')); ?>"
                                placeholder="Search files, clients, categories..." 
                                class="block w-full pl-12 pr-4 py-3 border-2 border-indigo-200 rounded-xl leading-5 bg-white/80 backdrop-blur-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400 shadow-inner transition-all duration-200 sm:text-sm">
                     </div>
@@ -35,7 +44,7 @@
                         </svg>
                         Filters
                     </button>
-                    @can('files.bulk')
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.bulk')): ?>
                         <div id="bulk-actions-empty" class="flex items-center">
                             <button onclick="showBulkActions()" 
                                     class="inline-flex items-center justify-center px-5 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl font-medium text-sm text-purple-700 hover:from-purple-100 hover:to-pink-100 hover:border-purple-300 transition-all duration-200 shadow-sm hover:shadow-md">
@@ -100,78 +109,78 @@
                                 </div>
                             </div>
                         </div>
-                    @endcan
-                    @can('files.upload')
-                        <a href="{{ route('files.create') }}" class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 border border-transparent rounded-xl font-semibold text-sm text-white hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.upload')): ?>
+                        <a href="<?php echo e(route('files.create')); ?>" class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 border border-transparent rounded-xl font-semibold text-sm text-white hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                             <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             Upload File
                         </a>
-                    @endcan
+                    <?php endif; ?>
                 </div>
             </div>
 
             <!-- Advanced Filters Drawer -->
             <div id="filters-drawer" class="mt-6 pt-6 border-t-2 border-gradient-to-r from-indigo-200 to-purple-200 bg-gradient-to-br from-white/50 to-indigo-50/30 rounded-xl p-4" style="display: none;">
-                <form method="GET" action="{{ route('files.index') }}" id="filters-form">
+                <form method="GET" action="<?php echo e(route('files.index')); ?>" id="filters-form">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Client</label>
                             <select name="client_id" class="w-full rounded-lg border-2 border-indigo-200 shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-300 text-sm bg-white transition-all duration-200">
                                 <option value="">All Clients</option>
-                                @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" {{ request('client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
-                                @endforeach
+                                <?php $__currentLoopData = $clients; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $client): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($client->id); ?>" <?php echo e(request('client_id') == $client->id ? 'selected' : ''); ?>><?php echo e($client->name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Category</label>
                             <select name="category_id" class="w-full rounded-lg border-2 border-purple-200 shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-300 text-sm bg-white transition-all duration-200">
                                 <option value="">All Categories</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
-                                @endforeach
+                                <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($category->id); ?>" <?php echo e(request('category_id') == $category->id ? 'selected' : ''); ?>><?php echo e($category->name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Status</label>
                             <select name="status" class="w-full rounded-lg border-2 border-pink-200 shadow-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-300 text-sm bg-white transition-all duration-200">
                                 <option value="">All Statuses</option>
-                                <option value="uploaded" {{ request('status') == 'uploaded' ? 'selected' : '' }}>Uploaded</option>
-                                <option value="pending_review" {{ request('status') == 'pending_review' ? 'selected' : '' }}>Pending Review</option>
-                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                                <option value="needs_correction" {{ request('status') == 'needs_correction' ? 'selected' : '' }}>Needs Correction</option>
-                                <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archived</option>
+                                <option value="uploaded" <?php echo e(request('status') == 'uploaded' ? 'selected' : ''); ?>>Uploaded</option>
+                                <option value="pending_review" <?php echo e(request('status') == 'pending_review' ? 'selected' : ''); ?>>Pending Review</option>
+                                <option value="approved" <?php echo e(request('status') == 'approved' ? 'selected' : ''); ?>>Approved</option>
+                                <option value="needs_correction" <?php echo e(request('status') == 'needs_correction' ? 'selected' : ''); ?>>Needs Correction</option>
+                                <option value="archived" <?php echo e(request('status') == 'archived' ? 'selected' : ''); ?>>Archived</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Uploaded By</label>
                             <select name="uploaded_by" class="w-full rounded-lg border-2 border-blue-200 shadow-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-300 text-sm bg-white transition-all duration-200">
                                 <option value="">All Users</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ request('uploaded_by') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                                @endforeach
+                                <?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($user->id); ?>" <?php echo e(request('uploaded_by') == $user->id ? 'selected' : ''); ?>><?php echo e($user->name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Financial Year</label>
-                            <input type="text" name="financial_year" value="{{ request('financial_year', '') }}" placeholder="2023-2024" class="w-full rounded-lg border-2 border-indigo-200 shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-300 text-sm bg-white transition-all duration-200">
+                            <input type="text" name="financial_year" value="<?php echo e(request('financial_year', '')); ?>" placeholder="2023-2024" class="w-full rounded-lg border-2 border-indigo-200 shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-300 text-sm bg-white transition-all duration-200">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Date From</label>
-                            <input type="date" name="date_from" value="{{ request('date_from', '') }}" class="w-full rounded-lg border-2 border-purple-200 shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-300 text-sm bg-white transition-all duration-200">
+                            <input type="date" name="date_from" value="<?php echo e(request('date_from', '')); ?>" class="w-full rounded-lg border-2 border-purple-200 shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-300 text-sm bg-white transition-all duration-200">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Date To</label>
-                            <input type="date" name="date_to" value="{{ request('date_to', '') }}" class="w-full rounded-lg border-2 border-pink-200 shadow-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-300 text-sm bg-white transition-all duration-200">
+                            <input type="date" name="date_to" value="<?php echo e(request('date_to', '')); ?>" class="w-full rounded-lg border-2 border-pink-200 shadow-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-300 text-sm bg-white transition-all duration-200">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Lock Status</label>
                             <select name="is_locked" class="w-full rounded-lg border-2 border-amber-200 shadow-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-300 text-sm bg-white transition-all duration-200">
                                 <option value="">All</option>
-                                <option value="1" {{ request('is_locked') === '1' ? 'selected' : '' }}>Locked</option>
-                                <option value="0" {{ request('is_locked') === '0' ? 'selected' : '' }}>Unlocked</option>
+                                <option value="1" <?php echo e(request('is_locked') === '1' ? 'selected' : ''); ?>>Locked</option>
+                                <option value="0" <?php echo e(request('is_locked') === '0' ? 'selected' : ''); ?>>Unlocked</option>
                             </select>
                         </div>
                     </div>
@@ -188,15 +197,15 @@
         </div>
 
         <!-- Bulk Action Form (Hidden) -->
-        @can('files.bulk')
-            <form id="bulk-action-form" method="POST" action="{{ route('files.bulk-action') }}" style="display: none;">
-                @csrf
+        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.bulk')): ?>
+            <form id="bulk-action-form" method="POST" action="<?php echo e(route('files.bulk-action')); ?>" style="display: none;">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" id="bulk-action-type">
                 <input type="hidden" name="category_id" id="bulk-category-id">
                 <input type="hidden" name="financial_year" id="bulk-financial-year">
                 <div id="bulk-file-ids"></div>
             </form>
-        @endcan
+        <?php endif; ?>
 
         <!-- Table -->
         <div class="bg-white rounded-2xl border-2 border-indigo-200/60 shadow-xl overflow-hidden backdrop-blur-sm relative z-10">
@@ -204,14 +213,14 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 sticky top-0 z-10 shadow-lg">
                         <tr>
-                            @can('files.bulk')
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.bulk')): ?>
                                 <th class="px-6 py-4 text-left">
                                     <input type="checkbox" 
                                            id="select-all"
                                            onclick="toggleAllFiles()"
                                            class="rounded border-white bg-white/20 text-white focus:ring-white focus:ring-offset-indigo-600">
                                 </th>
-                            @endcan
+                            <?php endif; ?>
                             <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-32">Name and Title</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Client</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Category</th>
@@ -222,51 +231,52 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($files as $file)
-                            <tr class="hover:bg-gradient-to-r hover:from-indigo-50 hover:via-purple-50 hover:to-pink-50 transition-all duration-200 border-b border-gray-100 {{ $loop->even ? 'bg-gradient-to-r from-gray-50/50 to-indigo-50/30' : 'bg-white' }}">
-                                @can('files.bulk')
+                        <?php $__empty_1 = true; $__currentLoopData = $files; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <tr class="hover:bg-gradient-to-r hover:from-indigo-50 hover:via-purple-50 hover:to-pink-50 transition-all duration-200 border-b border-gray-100 <?php echo e($loop->even ? 'bg-gradient-to-r from-gray-50/50 to-indigo-50/30' : 'bg-white'); ?>">
+                                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.bulk')): ?>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <input type="checkbox" 
                                                name="file_ids[]" 
-                                               value="{{ $file->id }}"
+                                               value="<?php echo e($file->id); ?>"
                                                class="file-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                                onchange="updateSelectedFiles()">
                                     </td>
-                                @endcan
+                                <?php endif; ?>
                                 <td class="px-4 py-4">
                                     <div class="flex items-center max-w-[8rem]">
-                                        @if($file->is_locked)
+                                        <?php if($file->is_locked): ?>
                                             <svg class="h-4 w-4 text-amber-500 mr-1.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Locked">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
-                                        @endif
+                                        <?php endif; ?>
                                         <svg class="h-4 w-4 text-gray-400 mr-1.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         <div class="min-w-0 flex-1">
-                                            <div class="text-xs font-semibold text-gray-900 truncate" title="{{ $file->original_name }}">{{ $file->original_name }}</div>
-                                            @if($file->title)
-                                                <div class="text-xs text-gray-600 truncate" title="{{ $file->title }}">{{ $file->title }}</div>
-                                            @endif
-                                            @if($file->category->retention_days)
+                                            <div class="text-xs font-semibold text-gray-900 truncate" title="<?php echo e($file->original_name); ?>"><?php echo e($file->original_name); ?></div>
+                                            <?php if($file->title): ?>
+                                                <div class="text-xs text-gray-600 truncate" title="<?php echo e($file->title); ?>"><?php echo e($file->title); ?></div>
+                                            <?php endif; ?>
+                                            <?php if($file->category->retention_days): ?>
                                                 <div class="text-xs text-gray-500 truncate">
-                                                    Retention: {{ $file->category->retention_days }} days
-                                                    @if($file->archived_at)
-                                                        • Archived {{ $file->archived_at->format('M d, Y') }}
-                                                    @endif
+                                                    Retention: <?php echo e($file->category->retention_days); ?> days
+                                                    <?php if($file->archived_at): ?>
+                                                        • Archived <?php echo e($file->archived_at->format('M d, Y')); ?>
+
+                                                    <?php endif; ?>
                                                 </div>
-                                            @endif
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-800">{{ $file->client->name }}</div>
+                                    <div class="text-sm font-medium text-gray-800"><?php echo e($file->client->name); ?></div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-800">{{ $file->category->name }}</div>
+                                    <div class="text-sm font-medium text-gray-800"><?php echo e($file->category->name); ?></div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @php
+                                    <?php
                                         // Ensure status always has a value
                                         $status = $file->status ?: 'uploaded';
                                         if (empty($status) || is_null($status)) {
@@ -283,67 +293,114 @@
                                         
                                         $statusColor = $statusColors[$status] ?? $statusColors['uploaded'];
                                         $statusLabel = str_replace('_', ' ', ucfirst($status));
-                                    @endphp
-                                    <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold border {{ $statusColor }}">
-                                        {{ $statusLabel }}
+                                    ?>
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold border <?php echo e($statusColor); ?>">
+                                        <?php echo e($statusLabel); ?>
+
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-800">{{ $file->financial_year ?? '—' }}</div>
+                                    <div class="text-sm font-medium text-gray-800"><?php echo e($file->financial_year ?? '—'); ?></div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-800">{{ $file->created_at->format('M d, Y') }}</div>
-                                    <div class="text-xs text-gray-600">{{ $file->uploader->name ?? 'System' }}</div>
+                                    <div class="text-sm font-medium text-gray-800"><?php echo e($file->created_at->format('M d, Y')); ?></div>
+                                    <div class="text-xs text-gray-600"><?php echo e($file->uploader->name ?? 'System'); ?></div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <x-table-action-dropdown :item="$file">
-                                        @can('files.preview')
-                                            <button onclick="previewFile({{ $file->id }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Preview</button>
-                                        @endcan
-                                        @can('files.download')
-                                            <a href="{{ route('files.download', $file) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Download</a>
-                                        @endcan
-                                        @can('files.view')
-                                            <a href="{{ route('files.show', $file) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">View Details</a>
-                                        @endcan
-                                        @can('files.delete')
-                                            <button onclick="showDeleteConfirm({{ $file->id }}, '{{ addslashes($file->original_name) }}')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">Delete</button>
-                                        @endcan
-                                    </x-table-action-dropdown>
+                                    <?php if (isset($component)) { $__componentOriginal3bb36eedd7bcefc353ba4ac566fed84b = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal3bb36eedd7bcefc353ba4ac566fed84b = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.table-action-dropdown','data' => ['item' => $file]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('table-action-dropdown'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['item' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($file)]); ?>
+                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.preview')): ?>
+                                            <button onclick="previewFile(<?php echo e($file->id); ?>)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Preview</button>
+                                        <?php endif; ?>
+                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.download')): ?>
+                                            <a href="<?php echo e(route('files.download', $file)); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Download</a>
+                                        <?php endif; ?>
+                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.view')): ?>
+                                            <a href="<?php echo e(route('files.show', $file)); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">View Details</a>
+                                        <?php endif; ?>
+                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.delete')): ?>
+                                            <button onclick="showDeleteConfirm(<?php echo e($file->id); ?>, '<?php echo e(addslashes($file->original_name)); ?>')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+                                        <?php endif; ?>
+                                     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal3bb36eedd7bcefc353ba4ac566fed84b)): ?>
+<?php $attributes = $__attributesOriginal3bb36eedd7bcefc353ba4ac566fed84b; ?>
+<?php unset($__attributesOriginal3bb36eedd7bcefc353ba4ac566fed84b); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal3bb36eedd7bcefc353ba4ac566fed84b)): ?>
+<?php $component = $__componentOriginal3bb36eedd7bcefc353ba4ac566fed84b; ?>
+<?php unset($__componentOriginal3bb36eedd7bcefc353ba4ac566fed84b); ?>
+<?php endif; ?>
                                 </td>
                             </tr>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
-                                <td colspan="{{ auth()->user()->can('files.bulk') ? '8' : '7' }}" class="px-6 py-12 text-center">
+                                <td colspan="<?php echo e(auth()->user()->can('files.bulk') ? '8' : '7'); ?>" class="px-6 py-12 text-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     <h3 class="mt-2 text-sm font-medium text-gray-900">No files found</h3>
                                     <p class="mt-1 text-sm text-gray-300">Get started by uploading a new file.</p>
-                                    @can('files.upload')
+                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.upload')): ?>
                                         <div class="mt-6">
-                                            <a href="{{ route('files.create') }}">
-                                                <x-primary-button>Upload File</x-primary-button>
+                                            <a href="<?php echo e(route('files.create')); ?>">
+                                                <?php if (isset($component)) { $__componentOriginald411d1792bd6cc877d687758b753742c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald411d1792bd6cc877d687758b753742c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.primary-button','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('primary-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>Upload File <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald411d1792bd6cc877d687758b753742c)): ?>
+<?php $attributes = $__attributesOriginald411d1792bd6cc877d687758b753742c; ?>
+<?php unset($__attributesOriginald411d1792bd6cc877d687758b753742c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald411d1792bd6cc877d687758b753742c)): ?>
+<?php $component = $__componentOriginald411d1792bd6cc877d687758b753742c; ?>
+<?php unset($__componentOriginald411d1792bd6cc877d687758b753742c); ?>
+<?php endif; ?>
                                             </a>
                                         </div>
-                                    @endcan
+                                    <?php endif; ?>
                                 </td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
 
-            @if($files->hasPages())
+            <?php if($files->hasPages()): ?>
                 <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $files->links() }}
+                    <?php echo e($files->links()); ?>
+
                 </div>
-            @endif
+            <?php endif; ?>
         </div>
     </div>
 
     <!-- File Preview Modal -->
-    <x-modal name="file-preview">
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'file-preview']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'file-preview']); ?>
         <div class="p-6">
             <h2 id="preview-title" class="text-lg font-semibold text-gray-900 mb-4">Loading preview...</h2>
             <div id="preview-loading" class="flex items-center justify-center py-12">
@@ -357,10 +414,28 @@
                 <p class="text-red-600 mb-4"></p>
             </div>
         </div>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
     <!-- Delete Confirmation Modal -->
-    <x-modal name="delete-confirm">
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'delete-confirm']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'delete-confirm']); ?>
         <div class="p-6">
             <div class="flex items-center mb-4">
                 <div class="flex-shrink-0 mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
@@ -375,8 +450,8 @@
             <p class="text-sm text-red-600 mb-6 text-center font-medium">This action cannot be undone. Please enter your password to confirm.</p>
             
             <form id="delete-form" method="POST" action="">
-                @csrf
-                @method('DELETE')
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
                 <div class="mb-4">
                     <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                     <input type="password" 
@@ -402,7 +477,16 @@
                 </div>
             </form>
         </div>
-    </x-modal>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
 
     <script>
         let selectedFiles = [];
@@ -428,7 +512,7 @@
                 if (value) params.set(key, value);
             });
             
-            window.location.href = '{{ route('files.index') }}?' + params.toString();
+            window.location.href = '<?php echo e(route('files.index')); ?>?' + params.toString();
         }
 
         function toggleFilters() {
@@ -446,10 +530,10 @@
         }
 
         function resetFilters() {
-            window.location.href = '{{ route('files.index') }}';
+            window.location.href = '<?php echo e(route('files.index')); ?>';
         }
 
-        @can('files.bulk')
+        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('files.bulk')): ?>
         function showBulkActions() {
             if (selectedFiles.length === 0) {
                 alert('Please select files using the checkboxes in the table to perform bulk actions.');
@@ -542,7 +626,7 @@
             });
             
             if (action === 'change_category') {
-                const categories = @json($categories);
+                const categories = <?php echo json_encode($categories, 15, 512) ?>;
                 let categoryOptions = 'Select a category:\n\n';
                 categories.forEach((cat, index) => {
                     categoryOptions += `${index + 1}. ${cat.name} (ID: ${cat.id})\n`;
@@ -584,7 +668,7 @@
                 menu.style.display = 'none';
             }
         });
-        @endcan
+        <?php endif; ?>
 
         function previewFile(fileId) {
             const loadingDiv = document.getElementById('preview-loading');
@@ -690,17 +774,27 @@
         });
 
         // Check for password errors on page load and reopen modal if needed
-        @if($errors->has('password') && session('delete_file_id'))
+        <?php if($errors->has('password') && session('delete_file_id')): ?>
             document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(function() {
-                    showDeleteConfirm({{ session('delete_file_id') }}, '{{ addslashes(session('delete_file_name', 'this file')) }}');
+                    showDeleteConfirm(<?php echo e(session('delete_file_id')); ?>, '<?php echo e(addslashes(session('delete_file_name', 'this file'))); ?>');
                     const errorDiv = document.getElementById('delete-password-error');
                     const passwordInput = document.getElementById('delete-password');
-                    errorDiv.textContent = '{{ $errors->first('password') }}';
+                    errorDiv.textContent = '<?php echo e($errors->first('password')); ?>';
                     errorDiv.style.display = 'block';
                     passwordInput.classList.add('border-red-500');
                 }, 100);
             });
-        @endif
+        <?php endif; ?>
     </script>
-</x-app-layout>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $attributes = $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $component = $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php /**PATH C:\xampp\htdocs\fms\resources\views/files/index.blade.php ENDPATH**/ ?>

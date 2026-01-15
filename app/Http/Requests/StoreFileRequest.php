@@ -17,7 +17,8 @@ class StoreFileRequest extends FormRequest
             'client_id' => ['required', 'exists:clients,id'],
             'category_id' => ['required', 'exists:categories,id'],
             'file' => ['required', 'file', 'max:10240'], // 10MB max
-            'financial_year' => ['required', 'string', 'size:9', 'regex:/^\d{4}-\d{4}$/'],
+            'title' => ['nullable', 'string', 'max:255'],
+            'financial_year' => ['nullable', 'string', 'size:9', 'regex:/^\d{4}-\d{4}$/'],
         ];
     }
 }

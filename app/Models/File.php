@@ -18,6 +18,7 @@ class File extends Model
         'category_id',
         'uploaded_by',
         'original_name',
+        'title',
         'stored_name',
         's3_path',
         'mime_type',

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('USE_AWS', false) ? 's3' : env('FILESYSTEM_DISK', 'local'),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,8 +32,9 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
-            'serve' => true,
+            'root' => storage_path('app/files'),
+            'url' => rtrim(env('APP_URL'), '/').'/storage/files',
+            'visibility' => 'private',
             'throw' => false,
             'report' => false,
         ],

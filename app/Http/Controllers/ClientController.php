@@ -6,6 +6,7 @@ use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Models\Client;
 use App\Services\AuditLogService;
+use App\Services\StorageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -115,11 +116,12 @@ class ClientController extends Controller
     {
         $folderPath = "clients/{$clientId}/";
         try {
-            if (!Storage::disk('s3')->exists($folderPath)) {
-                Storage::disk('s3')->makeDirectory($folderPath);
+            $disk = StorageService::disk();
+            if (!$disk->exists($folderPath)) {
+                $disk->makeDirectory($folderPath);
             }
         } catch (\Exception $e) {
-            \Log::error("Failed to create S3 folder for client {$clientId}: " . $e->getMessage());
+            \Log::error("Failed to create folder for client {$clientId}: " . $e->getMessage());
         }
     }
 }

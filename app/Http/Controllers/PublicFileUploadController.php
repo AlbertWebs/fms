@@ -7,6 +7,7 @@ use App\Models\File;
 use App\Models\Client;
 use App\Models\Category;
 use App\Services\AuditLogService;
+use App\Services\StorageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -54,7 +55,7 @@ class PublicFileUploadController extends Controller
 
         $uploadedFile = $request->file('file');
         $clientId = $fileRequest->client_id;
-        $financialYear = $fileRequest->financial_year ?? now()->format('Y') . '-' . (now()->format('Y') + 1);
+        $financialYear = $fileRequest->financial_year ?? null;
         $categoryId = $fileRequest->category_id;
 
         if (!$categoryId) {
@@ -63,15 +64,25 @@ class PublicFileUploadController extends Controller
 
         $originalName = $uploadedFile->getClientOriginalName();
         $storedName = Str::uuid() . '.' . $uploadedFile->getClientOriginalExtension();
-        $s3Path = "clients/{$clientId}/{$financialYear}/{$categoryId}/{$storedName}";
+        
+        // Build path with optional financial year
+        $s3Path = $financialYear 
+            ? "clients/{$clientId}/{$financialYear}/{$categoryId}/{$storedName}"
+            : "clients/{$clientId}/{$categoryId}/{$storedName}";
 
         // Check for existing file for versioning
-        $existingFile = File::where('client_id', $clientId)
+        $existingFileQuery = File::where('client_id', $clientId)
             ->where('category_id', $categoryId)
-            ->where('financial_year', $financialYear)
             ->where('original_name', $originalName)
-            ->whereNull('parent_file_id')
-            ->first();
+            ->whereNull('parent_file_id');
+            
+        if ($financialYear) {
+            $existingFileQuery->where('financial_year', $financialYear);
+        } else {
+            $existingFileQuery->whereNull('financial_year');
+        }
+        
+        $existingFile = $existingFileQuery->first();
 
         $version = 1;
         $parentFileId = null;
@@ -82,16 +93,16 @@ class PublicFileUploadController extends Controller
             $parentFileId = $existingFile->id;
         }
 
-        // Upload to S3
+        // Upload file
         try {
-            Storage::disk('s3')->putFileAs(
+            StorageService::disk()->putFileAs(
                 dirname($s3Path),
                 $uploadedFile,
                 basename($s3Path),
                 'private'
             );
         } catch (\Exception $e) {
-            \Log::error('Failed to upload file to S3: ' . $e->getMessage());
+            \Log::error('Failed to upload file: ' . $e->getMessage());
             return back()->with('error', 'Failed to upload file. Please try again.');
         }
 
