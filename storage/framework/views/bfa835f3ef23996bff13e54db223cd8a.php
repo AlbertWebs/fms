@@ -393,24 +393,24 @@
     <!-- File Preview Modal -->
     <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'file-preview']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'file-preview','maxWidth' => '3/4']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('modal'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['name' => 'file-preview']); ?>
-        <div class="p-6">
-            <h2 id="preview-title" class="text-lg font-semibold text-gray-900 mb-4">Loading preview...</h2>
-            <div id="preview-loading" class="flex items-center justify-center py-12">
+<?php $component->withAttributes(['name' => 'file-preview','maxWidth' => '3/4']); ?>
+        <div class="p-6 flex flex-col flex-1 overflow-hidden">
+            <h2 id="preview-title" class="text-lg font-semibold text-gray-900 mb-4 flex-shrink-0">Loading preview...</h2>
+            <div id="preview-loading" class="flex items-center justify-center py-12 flex-1">
                 <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
             </div>
-            <div id="preview-content" style="display: none;"></div>
-            <div id="preview-error" class="text-center py-12" style="display: none;">
+            <div id="preview-content" class="flex-1 overflow-auto min-h-0" style="display: none;"></div>
+            <div id="preview-error" class="text-center py-12 flex-1" style="display: none;">
                 <p class="text-red-600 mb-4"></p>
             </div>
         </div>
@@ -698,12 +698,12 @@
                     if (data.mime_type === 'application/pdf') {
                         const iframe = document.createElement('iframe');
                         iframe.src = data.url;
-                        iframe.className = 'w-full h-96 border border-gray-200 rounded';
+                        iframe.className = 'w-full h-[70vh] border-2 border-gray-300 rounded-lg shadow-lg';
                         contentDiv.appendChild(iframe);
                     } else if (data.mime_type.startsWith('image/')) {
                         const img = document.createElement('img');
                         img.src = data.url;
-                        img.className = 'max-w-full h-auto mx-auto rounded';
+                        img.className = 'max-w-full max-h-[70vh] h-auto mx-auto rounded-lg shadow-lg';
                         contentDiv.appendChild(img);
                     } else {
                         contentDiv.innerHTML = `
